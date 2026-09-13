@@ -241,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 公共X轴月份数据
     const xData = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
     let isBarMode = true;
+    let typingTimer = null; // 用于控制打字动画，解决重叠bug
 
     // 渲染堆叠柱状图
     function drawBar() {
@@ -469,13 +470,18 @@ document.addEventListener('DOMContentLoaded', function () {
 优化建议：改善苏堤、三潭印月的交通接驳；优化雷峰塔的配套服务与定价，提升性价比评分。`
     };
 
-    // 逐字打字动画
+    // 逐字打字动画（修复重叠bug）
     function typeWrite(element, text, speed = 30) {
+        if (typingTimer) {
+            clearInterval(typingTimer);
+            typingTimer = null;
+        }
         element.innerHTML = "";
         let index = 0;
-        const timer = setInterval(()=>{
+        typingTimer = setInterval(()=>{
             if(index >= text.length){
-                clearInterval(timer);
+                clearInterval(typingTimer);
+                typingTimer = null;
                 return;
             }
             element.innerHTML += text.charAt(index);
@@ -486,6 +492,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // ✅ 挂载到全局window，解决 onclick找不到函数！！！
     window.getAiData = async function() {
         const dom = document.getElementById('ai-content');
+        // 点击先停止正在进行的打字
+        if (typingTimer) {
+            clearInterval(typingTimer);
+            typingTimer = null;
+        }
         dom.innerHTML = "AI思考中...";
         await new Promise(resolve=>setTimeout(resolve,600));
         const selectedType = document.getElementById('ai-select').value;
